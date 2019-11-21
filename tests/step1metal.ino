@@ -1,0 +1,341 @@
+
+#include <Wire.h>
+#include <Adafruit_PWMServoDriver.h>
+#include <NewPing.h>
+
+#define TRIGGER_PIN  12   // piny do czujnika
+#define ECHO_PIN     11
+#define MAX_DISTANCE 300
+
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+
+#define SERVOMIN1_1  350 // this is the 'minimum' pulse length count (out of 4096)
+#define SERVOMAX1_1  450 // this is the 'maximum' pulse length count (out of 4096)
+#define SERVOMIN1_2  350 // this is the 'minimum' pulse length count (out of 4096)
+#define SERVOMAX1_2  450 // this is the 'maximum' pulse length count (out of 4096)
+
+#define SERVOMIN2_1  500 // this is the 'minimum' pulse length count (out of 4096)
+#define SERVOMAX2_1  600 // this is the 'maximum' pulse length count (out of 4096)
+#define SERVOMIN2_2  425 // this is the 'minimum' pulse length count (out of 4096)
+#define SERVOMAX2_2  525 // this is the 'maximum' pulse length count (out of 4096)
+
+#define SERVOMIN3_1  350 // this is the 'minimum' pulse length count (out of 4096)
+#define SERVOMAX3_1  450 // this is the 'maximum' pulse length count (out of 4096)
+#define SERVOMIN3_2  250 // this is the 'minimum' pulse length count (out of 4096)
+#define SERVOMAX3_2  350 // this is the 'maximum' pulse length count (out of 4096)
+
+#define SERVOMIN4_1  175 // this is the 'minimum' pulse length count (out of 4096)
+#define SERVOMAX4_1  275 // this is the 'maximum' pulse length count (out of 4096)
+#define SERVOMIN4_2  275 //!! this is the 'minimum' pulse length count (out of 4096)
+#define SERVOMAX4_2  375 //!! this is the 'maximum' pulse length count (out of 4096)
+
+#define SERVOMIN5_1  250 // this is the 'minimum' pulse length count (out of 4096)
+#define SERVOMAX5_1  350 // this is the 'maximum' pulse length count (out of 4096)
+#define SERVOMIN5_2  300 // this is the 'minimum' pulse length count (out of 4096)
+#define SERVOMAX5_2  400 // this is the 'maximum' pulse length count (out of 4096)
+
+#define SERVOMIN6_1  225 // this is the 'minimum' pulse length count (out of 4096)
+#define SERVOMAX6_1  325 // this is the 'maximum' pulse length count (out of 4096)
+#define SERVOMIN6_2  350 // this is the 'minimum' pulse length count (out of 4096)
+#define SERVOMAX6_2  450 // this is the 'maximum' pulse length count (out of 4096)
+
+
+
+uint8_t servonum1_1 = 0;
+uint8_t servonum1_2 = 1;
+uint8_t servonum2_1 = 2;
+uint8_t servonum2_2 = 3;
+uint8_t servonum3_1 = 4;
+uint8_t servonum3_2 = 5;
+uint8_t servonum4_1 = 14;
+uint8_t servonum4_2 = 7;
+uint8_t servonum5_1 = 8;
+uint8_t servonum5_2 = 9;
+uint8_t servonum6_1 = 10;
+uint8_t servonum6_2 = 11;
+
+
+
+
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
+
+uint16_t dist() {
+  uint16_t uS = sonar.ping();
+  if (uS == 0) {
+    Serial.print("MAX: resetting sensor \n");
+    pinMode(ECHO_PIN, OUTPUT);
+    delay(150);
+    digitalWrite(ECHO_PIN, LOW);
+    delay(150);
+    pinMode(ECHO_PIN, INPUT);
+    delay(150);
+    return MAX_DISTANCE;
+  }
+  else {
+    return uS / US_ROUNDTRIP_CM;
+  }
+}
+
+void turn_right(uint16_t v) {
+  for (uint16_t pulselen = 0; pulselen < 100; ) {
+    pulselen = pulselen + v;
+
+    pwm.setPWM(servonum1_2, 0, SERVOMIN1_2 + pulselen);
+    pwm.setPWM(servonum3_2, 0, SERVOMIN3_2 + pulselen);
+    pwm.setPWM(servonum5_2, 0, SERVOMIN5_2 + pulselen);
+
+    delay(30);
+  }
+  delay(100);
+
+  for (uint16_t pulselen = 0; pulselen < 50; ) {
+    pulselen = pulselen + v;
+
+    pwm.setPWM(servonum1_1, 0, (SERVOMIN1_1 + SERVOMAX1_1) / 2 + pulselen);
+    pwm.setPWM(servonum3_1, 0, (SERVOMIN3_1 + SERVOMAX3_1) / 2 + pulselen);
+    pwm.setPWM(servonum5_1, 0, (SERVOMIN5_1 + SERVOMAX5_1) / 2 + pulselen);
+
+    delay(30);
+  }
+  delay(100);
+
+  for (uint16_t pulselen = 0; pulselen < 100; ) {
+    pulselen = pulselen + v;
+
+    pwm.setPWM(servonum1_2, 0, SERVOMAX1_2 - pulselen);
+    pwm.setPWM(servonum3_2, 0, SERVOMAX3_2 - pulselen);
+    pwm.setPWM(servonum5_2, 0, SERVOMAX5_2 - pulselen);
+
+    delay(30);
+  }
+  delay(100);
+
+  for (uint16_t pulselen = 0; pulselen < 100; ) {
+    pulselen = pulselen + v;
+
+    pwm.setPWM(servonum2_2, 0, SERVOMIN2_2 + pulselen);
+    pwm.setPWM(servonum4_2, 0, SERVOMIN4_2 + pulselen);
+    pwm.setPWM(servonum6_2, 0, SERVOMIN6_2 + pulselen);
+
+    delay(30);
+  }
+
+  delay(100);
+  for (uint16_t pulselen = 0; pulselen < 50; ) {
+    pulselen = pulselen + v;
+
+    pwm.setPWM(servonum1_1, 0, SERVOMAX1_1 - pulselen);
+    pwm.setPWM(servonum3_1, 0, SERVOMAX3_1 - pulselen);
+    pwm.setPWM(servonum5_1, 0, SERVOMAX5_1 - pulselen);
+
+    delay(30);
+  }
+
+  delay(100);
+  for (uint16_t pulselen = 0; pulselen < 100; ) {
+    pulselen = pulselen + v;
+
+    pwm.setPWM(servonum2_2, 0, SERVOMAX2_2 - pulselen);
+    pwm.setPWM(servonum4_2, 0, SERVOMAX4_2 - pulselen);
+    pwm.setPWM(servonum6_2, 0, SERVOMAX6_2 - pulselen);
+
+    delay(30);
+  }
+}
+
+void turn_left(uint16_t v) {
+  for (uint16_t pulselen = 0; pulselen < 100; ) {
+    pulselen = pulselen + v;
+
+    pwm.setPWM(servonum1_2, 0, SERVOMIN1_2 + pulselen);
+    pwm.setPWM(servonum3_2, 0, SERVOMIN3_2 + pulselen);
+    pwm.setPWM(servonum5_2, 0, SERVOMIN5_2 + pulselen);
+
+    delay(30);
+  }
+  delay(100);
+
+  for (uint16_t pulselen = 0; pulselen < 50; ) {
+    pulselen = pulselen + v;
+
+    pwm.setPWM(servonum1_1, 0, (SERVOMIN1_1 + SERVOMAX1_1) / 2 - pulselen);
+    pwm.setPWM(servonum3_1, 0, (SERVOMIN3_1 + SERVOMAX3_1) / 2 - pulselen);
+    pwm.setPWM(servonum5_1, 0, (SERVOMIN5_1 + SERVOMAX5_1) / 2 - pulselen);
+
+    delay(30);
+  }
+  delay(100);
+
+  for (uint16_t pulselen = 0; pulselen < 100; ) {
+    pulselen = pulselen + v;
+
+    pwm.setPWM(servonum1_2, 0, SERVOMAX1_2 - pulselen);
+    pwm.setPWM(servonum3_2, 0, SERVOMAX3_2 - pulselen);
+    pwm.setPWM(servonum5_2, 0, SERVOMAX5_2 - pulselen);
+
+    delay(30);
+  }
+  delay(100);
+
+  for (uint16_t pulselen = 0; pulselen < 100; ) {
+    pulselen = pulselen + v;
+
+    pwm.setPWM(servonum2_2, 0, SERVOMIN2_2 + pulselen);
+    pwm.setPWM(servonum4_2, 0, SERVOMIN4_2 + pulselen);
+    pwm.setPWM(servonum6_2, 0, SERVOMIN6_2 + pulselen);
+
+    delay(30);
+  }
+
+  delay(100);
+  for (uint16_t pulselen = 0; pulselen < 50; ) {
+    pulselen = pulselen + v;
+
+    pwm.setPWM(servonum1_1, 0, SERVOMIN1_1 + pulselen);
+    pwm.setPWM(servonum3_1, 0, SERVOMIN3_1 + pulselen);
+    pwm.setPWM(servonum5_1, 0, SERVOMIN5_1 + pulselen);
+
+    delay(30);
+  }
+
+  delay(100);
+  for (uint16_t pulselen = 0; pulselen < 100; ) {
+    pulselen = pulselen + v;
+
+    pwm.setPWM(servonum2_2, 0, SERVOMAX2_2 - pulselen);
+    pwm.setPWM(servonum4_2, 0, SERVOMAX4_2 - pulselen);
+    pwm.setPWM(servonum6_2, 0, SERVOMAX6_2 - pulselen);
+
+    delay(30);
+  }
+}
+
+
+void move_up() {
+  for (uint16_t pulselen = 0; pulselen < 100; ) {
+    pulselen = pulselen + 5;
+
+    pwm.setPWM(servonum1_2, 0, SERVOMAX1_2 - pulselen);
+    pwm.setPWM(servonum2_2, 0, SERVOMAX2_2 - pulselen);
+    pwm.setPWM(servonum3_2, 0, SERVOMAX3_2 - pulselen);
+    pwm.setPWM(servonum4_2, 0, SERVOMAX4_2 - pulselen);
+    pwm.setPWM(servonum5_2, 0, SERVOMAX5_2 - pulselen);
+    pwm.setPWM(servonum6_2, 0, SERVOMAX6_2 - pulselen);
+
+    delay(30);
+  }
+}
+
+void move_down() {
+  for (uint16_t pulselen = 0; pulselen < 100; ) {
+    pulselen = pulselen + 5;
+
+    pwm.setPWM(servonum1_2, 0, SERVOMIN1_2 + pulselen);
+    pwm.setPWM(servonum2_2, 0, SERVOMIN2_2 + pulselen);
+    pwm.setPWM(servonum3_2, 0, SERVOMIN3_2 + pulselen);
+    pwm.setPWM(servonum4_2, 0, SERVOMIN4_2 + pulselen);
+    pwm.setPWM(servonum5_2, 0, SERVOMIN5_2 + pulselen);
+    pwm.setPWM(servonum6_2, 0, SERVOMIN6_2 + pulselen);
+
+    delay(30);
+  }
+}
+
+void step_a(uint16_t v) {
+  
+  for (uint16_t pulselen = 0; pulselen < 100; ) {
+    pulselen = pulselen + v;
+
+    pwm.setPWM(servonum2_2, 0, SERVOMIN2_2 + pulselen);
+    pwm.setPWM(servonum4_2, 0, SERVOMIN4_2 + pulselen);
+    pwm.setPWM(servonum6_2, 0, SERVOMIN6_2 + pulselen);
+
+    delay(30);
+  }
+  
+  for (uint16_t pulselen = 0; pulselen < 50; ) {
+    pulselen = pulselen + v;
+
+    pwm.setPWM(servonum2_1, 0, (SERVOMIN2_1+SERVOMAX2_1)/2 + pulselen);
+    pwm.setPWM(servonum4_1, 0, (SERVOMIN4_1+SERVOMAX4_1)/2 + pulselen);
+    pwm.setPWM(servonum6_1, 0, (SERVOMIN6_1+SERVOMAX6_1)/2 + pulselen);
+    delay(30);
+  }
+  delay(100);
+  
+
+  delay(200);
+
+  for (uint16_t pulselen = 0; pulselen < 100; ) {
+    pulselen = pulselen + v;
+
+    pwm.setPWM(servonum2_1, 0, SERVOMAX2_1 - pulselen);
+    pwm.setPWM(servonum2_2, 0, SERVOMAX2_2 - pulselen);
+    pwm.setPWM(servonum4_1, 0, SERVOMAX4_1 - pulselen);
+    pwm.setPWM(servonum4_2, 0, SERVOMAX4_2 - pulselen);
+    pwm.setPWM(servonum6_1, 0, SERVOMAX6_1 - pulselen);
+    pwm.setPWM(servonum6_2, 0, SERVOMAX6_2 - pulselen);
+
+    delay(30);
+  }
+}
+
+void step_b(uint16_t v) {
+  for (uint16_t pulselen = 0; pulselen < 100; ) {
+    pulselen = pulselen + v;
+
+    pwm.setPWM(servonum1_1, 0, SERVOMIN1_1 + pulselen);
+    pwm.setPWM(servonum1_2, 0, SERVOMIN1_2 + pulselen);
+    pwm.setPWM(servonum3_1, 0, SERVOMIN3_1 + pulselen);
+    pwm.setPWM(servonum3_2, 0, SERVOMIN3_2 + pulselen);
+    pwm.setPWM(servonum5_1, 0, SERVOMIN5_1 + pulselen);
+    pwm.setPWM(servonum5_2, 0, SERVOMIN5_2 + pulselen);
+
+    delay(30);
+  }
+  delay(200);
+
+  for (uint16_t pulselen = 0; pulselen < 100; ) {
+    pulselen = pulselen + v;
+
+    pwm.setPWM(servonum1_1, 0, SERVOMAX1_1 - pulselen);
+    pwm.setPWM(servonum1_2, 0, SERVOMAX1_2 - pulselen);
+    pwm.setPWM(servonum3_1, 0, SERVOMAX3_1 - pulselen);
+    pwm.setPWM(servonum3_2, 0, SERVOMAX3_2 - pulselen);
+    pwm.setPWM(servonum5_1, 0, SERVOMAX5_1 - pulselen);
+    pwm.setPWM(servonum5_2, 0, SERVOMAX5_2 - pulselen);
+
+    delay(30);
+  }
+}
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println("0 channel Servo test!");
+
+  pwm.begin();
+
+  pwm.setPWMFreq(60);  // Analog servos run at ~60 Hz updates
+  delay(20);
+  delay(1000);
+}
+
+void loop() {
+  uint16_t distance = dist();
+  Serial.print(distance);
+  Serial.print(" cm \n");
+  if (distance > 70) {
+    move_up();
+    delay(100);
+    turn_right(5);
+    delay(100);
+    step_a(3);
+    delay(100);
+    step_b(3);
+    delay(100);
+    turn_right(5);
+    delay(100);
+    move_down();
+    delay(100);
+  }
+}
